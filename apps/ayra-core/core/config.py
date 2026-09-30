@@ -1,0 +1,5 @@
+﻿APP_NAME = "AYRA"
+APP_VERSION = "0.1.0"
+ASSISTANT_ROLE = "AI Assistant"
+STUDIO_URL = "http://127.0.0.1:8000"
+DEBUG = True
