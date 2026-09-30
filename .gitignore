@@ -53,3 +53,4 @@ build/
 Thumbs.db
 .vscode/
 apps/ayra-studio/backend/server.py.backup
+apps/ayra-studio/generator/providers/ltx_adapter.py.backup
