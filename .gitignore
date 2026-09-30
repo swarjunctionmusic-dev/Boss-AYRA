@@ -1,0 +1,54 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+.venv-voice/
+venv/
+env/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Voice / audio test files
+*.wav
+*.mp3
+*.flac
+*.ogg
+
+# AI models / model weights
+*.onnx
+*.onnx.json
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.ckpt
+
+# Generated video / render output
+*.mp4
+*.mov
+*.mkv
+*.webm
+
+# Generated Studio output
+apps/ayra-studio/output/
+apps/ayra-studio/projects/*.backup.json
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Node
+node_modules/
+dist/
+build/
+.vite/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/

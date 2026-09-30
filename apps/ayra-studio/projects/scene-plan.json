@@ -1,0 +1,151 @@
+{
+  "project": {
+    "title": "Ava's Portal",
+    "concept": "A young girl discovers a mysterious portal inside an abandoned city and enters a hidden world where time has stopped.",
+    "description": "A cinematic emotional anime adventure about discovery, mystery, danger and hope.",
+    "video_type": "animation",
+    "visual_style": "cinematic anime aesthetics",
+    "duration_minutes": 1.0,
+    "scene_count": 6,
+    "aspect_ratio": "16:9",
+    "resolution": "1920x1080",
+    "fps": 30,
+    "language": "Hindi"
+  },
+  "story": {
+    "hook": "As the last rays of sunlight faded from the abandoned city, a young girl named Ava felt an inexplicable pull towards a mysterious portal hidden behind a crumbling wall.",
+    "tone": "Whimsical and mysterious",
+    "beginning": "Ava had always been drawn to the abandoned city, where rumors of a secret world had long been whispered among the locals. One day, she decided to explore the ruins, and the portal beckoned her to step through its shimmering veil.",
+    "middle": "In the hidden world, time stood still. Ava marveled at the beauty of frozen flowers, the songs of silenced birds, and the people who had been trapped in this eternal moment. But as she delved deeper into the world, she began to notice that something was amiss. A figure, shrouded in shadows, watched her every move.",
+    "climax": "Ava confronted the figure, who revealed himself to be the guardian of the world. He explained that time had stopped to allow the inhabitants to escape the chaos of the outside world, but at a terrible cost: their memories. Ava realized that she had the power to break the cycle and restore time, but at a personal cost.",
+    "ending": "With a heavy heart, Ava made the choice to break the cycle. As she did, the world around her began to thaw, and the people began to remember their lives. But as she stepped back through the portal, she knew that she had lost a piece of herself, leaving behind a world forever changed, and a memory that would haunt her forever."
+  },
+  "scenes": [
+    {
+      "scene_number": 1,
+      "duration_seconds": 10,
+      "purpose": "setup",
+      "narration": "As the last rays of sunlight faded from the abandoned city, Ava felt an inexplicable pull towards a mysterious portal hidden behind a crumbling wall.",
+      "characters": [
+        "Ava"
+      ],
+      "location": "Abandoned City",
+      "objects": [
+        "crumbling wall",
+        "portal"
+      ],
+      "visual_prompt": "Ava, a curious young girl, stands before a crumbling wall with a shimmering portal at its center. The sky is a deep orange, with the sun's rays casting long shadows across the ruins. Ava's hair is blown back by an invisible wind, and her eyes are fixed intently on the portal. The atmosphere is one of wonder and curiosity.",
+      "camera": "establishing shot",
+      "lighting": "overcast daylight",
+      "music": "Low atmospheric strings building tension.",
+      "sound_effects": "distant wind",
+      "transition": "cut",
+      "continuity_notes": "Ava's hair and clothes should be consistent throughout the scene."
+    },
+    {
+      "scene_number": 2,
+      "duration_seconds": 10,
+      "purpose": "discovery",
+      "narration": "One day, she decided to explore the ruins, and the portal beckoned her to step through its shimmering veil.",
+      "characters": [
+        "Ava"
+      ],
+      "location": "Abandoned City",
+      "objects": [
+        "portal",
+        "ruins"
+      ],
+      "visual_prompt": "Ava steps through the portal, and on the other side, she finds herself in a beautiful, yet desolate, landscape. The sky is a deep shade of purple, and the air is filled with the sweet scent of flowers. Ava's eyes widen in wonder as she takes in the sights and sounds of this new world. The atmosphere is one of enchantment and discovery.",
+      "camera": "tracking shot",
+      "lighting": "soft, magical light",
+      "music": "Whimsical and ethereal music",
+      "sound_effects": "birds singing",
+      "transition": "dissolve",
+      "continuity_notes": "Ava's clothing and hair should remain the same as in the previous scene."
+    },
+    {
+      "scene_number": 3,
+      "duration_seconds": 10,
+      "purpose": "escalation",
+      "narration": "In the hidden world, time stood still. Ava marveled at the beauty of frozen flowers, the songs of silenced birds, and the people who had been trapped in this eternal moment.",
+      "characters": [
+        "Ava",
+        "The Guardian"
+      ],
+      "location": "Hidden World",
+      "objects": [
+        "frozen flowers",
+        "silenced birds"
+      ],
+      "visual_prompt": "Ava walks through a field of frozen flowers, their petals glistening in the soft light. The air is filled with the sweet scent of blooming flowers, and the silence is almost palpable. Suddenly, a figure appears before her - The Guardian. He is shrouded in shadows, and his eyes glow with an otherworldly energy. The atmosphere is one of mystery and tension.",
+      "camera": "close-up",
+      "lighting": "low-key lighting",
+      "music": "Ominous and foreboding music",
+      "sound_effects": "creaking wood",
+      "transition": "cut",
+      "continuity_notes": "The Guardian's face and clothing should remain the same throughout the scene."
+    },
+    {
+      "scene_number": 4,
+      "duration_seconds": 10,
+      "purpose": "conflict",
+      "narration": "But as she delved deeper into the world, she began to notice that something was amiss. A figure, shrouded in shadows, watched her every move.",
+      "characters": [
+        "Ava",
+        "The Watcher"
+      ],
+      "location": "Hidden World",
+      "objects": [
+        "shadowy figure"
+      ],
+      "visual_prompt": "Ava walks through a dark alleyway, her footsteps echoing off the walls. Suddenly, a figure steps out of the shadows - The Watcher. He is tall and imposing, with eyes that seem to bore into Ava's soul. The atmosphere is one of unease and foreboding.",
+      "camera": "over-the-shoulder",
+      "lighting": "high-key lighting",
+      "music": "Suspenseful and ominous music",
+      "sound_effects": "footsteps",
+      "transition": "match cut",
+      "continuity_notes": "The Watcher's face and clothing should remain the same throughout the scene."
+    },
+    {
+      "scene_number": 5,
+      "duration_seconds": 10,
+      "purpose": "climax",
+      "narration": "Ava confronted the figure, who revealed himself to be the guardian of the world. He explained that time had stopped to allow the inhabitants to escape the chaos of the outside world, but at a terrible cost: their memories.",
+      "characters": [
+        "Ava",
+        "The Guardian"
+      ],
+      "location": "Hidden World",
+      "objects": [
+        "memory fragments"
+      ],
+      "visual_prompt": "Ava stands before The Guardian, her eyes filled with determination and sadness. The Guardian's eyes seem to bore into her soul, as he speaks of the cost of their world's immortality. The atmosphere is one of weight and introspection.",
+      "camera": "close-up",
+      "lighting": "soft, ethereal light",
+      "music": "Haunting and melancholic music",
+      "sound_effects": "silence",
+      "transition": "dip to black",
+      "continuity_notes": "Ava's expression and clothing should remain the same throughout the scene."
+    },
+    {
+      "scene_number": 6,
+      "duration_seconds": 10,
+      "purpose": "resolution",
+      "narration": "With a heavy heart, Ava made the choice to break the cycle. As she did, the world around her began to thaw, and the people began to remember their lives.",
+      "characters": [
+        "Ava"
+      ],
+      "location": "Hidden World",
+      "objects": [
+        "thawing world"
+      ],
+      "visual_prompt": "Ava stands in the center of the hidden world, her eyes closed as she makes her choice. The world around her begins to thaw, and the people begin to remember their lives. The atmosphere is one of hope and renewal.",
+      "camera": "establishing shot",
+      "lighting": "warm sunlight",
+      "music": "Uplifting and hopeful music",
+      "sound_effects": "cheers and applause",
+      "transition": "cut",
+      "continuity_notes": "Ava's expression and clothing should remain the same throughout the scene."
+    }
+  ]
+}

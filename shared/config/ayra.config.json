@@ -1,0 +1,25 @@
+﻿{
+  "app": {
+    "name": "AYRA",
+    "studio_name": "AYRA Studio",
+    "environment": "development"
+  },
+  "ai": {
+    "strategy": "provider_independent",
+    "director": {
+      "enabled": true,
+      "mode": "auto"
+    },
+    "visuals": {
+      "strategy": "hybrid",
+      "search_web": true,
+      "generate_when_needed": true
+    }
+  },
+  "render": {
+    "engine": "ffmpeg",
+    "default_resolution": "1920x1080",
+    "fps": 30,
+    "format": "mp4"
+  }
+}

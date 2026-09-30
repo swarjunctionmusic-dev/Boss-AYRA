@@ -1,0 +1,26 @@
+﻿{
+  "title": "The Last Light",
+  "concept": "A young girl discovers a mysterious portal inside an abandoned city and enters a hidden world where time has stopped.",
+  "description": "A cinematic emotional anime adventure about discovery, mystery, danger and hope.",
+  "video_type": "anime",
+  "visual_style": "anime",
+  "duration_minutes": 5,
+  "aspect_ratio": "16:9",
+  "resolution": "1920x1080",
+  "language": "Hindi",
+  "voice": {
+    "enabled": true,
+    "provider": "xtts"
+  },
+  "visuals": {
+    "mode": "auto",
+    "search_web": true,
+    "generate_when_needed": true
+  },
+  "subtitles": {
+    "enabled": true
+  },
+  "music": {
+    "enabled": true
+  }
+}

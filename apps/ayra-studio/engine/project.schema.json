@@ -1,0 +1,29 @@
+﻿{
+  "project": {
+    "title": "",
+    "description": "",
+    "duration_seconds": 0,
+    "aspect_ratio": "16:9",
+    "resolution": "1920x1080",
+    "fps": 30
+  },
+  "voice": {
+    "enabled": true,
+    "provider": "xtts",
+    "reference": ""
+  },
+  "scenes": [],
+  "audio": {
+    "background_music": "",
+    "sound_effects": []
+  },
+  "subtitles": {
+    "enabled": true,
+    "style": "clean"
+  },
+  "render": {
+    "video_codec": "libx264",
+    "audio_codec": "aac",
+    "format": "mp4"
+  }
+}

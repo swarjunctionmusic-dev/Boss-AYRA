@@ -1,0 +1,40 @@
+﻿{
+  "request": {
+    "input_mode": "concept_only",
+    "boss_provides": [
+      "concept"
+    ],
+    "director_decides": [
+      "story",
+      "hook",
+      "scene_count",
+      "scene_duration",
+      "narration",
+      "characters",
+      "locations",
+      "objects",
+      "visual_style",
+      "visual_prompts",
+      "camera",
+      "lighting",
+      "music",
+      "sound_effects",
+      "subtitles",
+      "transitions",
+      "visual_source",
+      "continuity",
+      "ending"
+    ]
+  },
+  "quality": {
+    "priority": [
+      "story_coherence",
+      "visual_relevance",
+      "character_continuity",
+      "pacing",
+      "cinematic_composition",
+      "audio_visual_sync",
+      "technical_quality"
+    ]
+  }
+}
