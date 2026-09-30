@@ -52,3 +52,4 @@ build/
 .DS_Store
 Thumbs.db
 .vscode/
+apps/ayra-studio/backend/server.py.backup
