@@ -10,6 +10,7 @@ function App() {
   const [activeProvider, setActiveProvider] = useState("loading...");
   const [selectedProvider, setSelectedProvider] = useState("");
   const [textToVideo, setTextToVideo] = useState(false);
+  const [providers, setProviders] = useState<string[]>([]);
 const [imageToVideo, setImageToVideo] = useState(false);
 const [videoToVideo, setVideoToVideo] = useState(false);
    useEffect(() => {
@@ -26,6 +27,7 @@ const [videoToVideo, setVideoToVideo] = useState(false);
         }
 
         setActiveProvider(data.active_provider);
+        setProviders(data.providers ?? []);
         setSelectedProvider(data.active_provider);
         setTextToVideo(data.capabilities?.text_to_video ?? false);
 setImageToVideo(data.capabilities?.image_to_video ?? false);
@@ -146,7 +148,11 @@ setVideoToVideo(data.capabilities?.video_to_video ?? false);
       setSelectedProvider(event.target.value)
     }
   >
-    <option value="ltx">LTX</option>
+   {providers.map((provider) => (
+  <option key={provider} value={provider}>
+    {provider.toUpperCase()}
+  </option>
+))}
   </select>
 </div>
 
