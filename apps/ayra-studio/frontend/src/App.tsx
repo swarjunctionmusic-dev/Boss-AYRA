@@ -8,6 +8,9 @@ function App() {
   const [status, setStatus] = useState("READY");
   const [videoUrl, setVideoUrl] = useState("");
   const [activeProvider, setActiveProvider] = useState("loading...");
+  const [textToVideo, setTextToVideo] = useState(false);
+const [imageToVideo, setImageToVideo] = useState(false);
+const [videoToVideo, setVideoToVideo] = useState(false);
    useEffect(() => {
     const loadProvider = async () => {
       try {
@@ -22,6 +25,9 @@ function App() {
         }
 
         setActiveProvider(data.active_provider);
+        setTextToVideo(data.capabilities?.text_to_video ?? false);
+setImageToVideo(data.capabilities?.image_to_video ?? false);
+setVideoToVideo(data.capabilities?.video_to_video ?? false);
       } catch (error) {
         console.error(error);
         setActiveProvider("offline");
@@ -116,6 +122,11 @@ function App() {
           <span className="status-dot"></span>
          {activeProvider.toUpperCase()} ONLINE
         </div>
+        <div className="provider-capabilities">
+  <span>TEXT → VIDEO {textToVideo ? "✓" : "✗"}</span>
+  <span>IMAGE → VIDEO {imageToVideo ? "✓" : "✗"}</span>
+  <span>VIDEO → VIDEO {videoToVideo ? "✓" : "✗"}</span>
+</div>
       </header>
 
       <main className="workspace">
