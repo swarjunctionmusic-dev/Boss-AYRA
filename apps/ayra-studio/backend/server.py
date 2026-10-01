@@ -117,6 +117,8 @@ class AYRAHandler(BaseHTTPRequestHandler):
                     "success": True,
                     "active_provider": ACTIVE_VIDEO_PROVIDER,
                     "providers": provider_manager.available_providers(),
+                    "capabilities": provider_manager.capabilities(ACTIVE_VIDEO_PROVIDER),
+
                 }
             )
 
