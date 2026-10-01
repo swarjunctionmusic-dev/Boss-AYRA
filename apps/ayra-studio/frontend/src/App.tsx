@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 
 function App() {
@@ -7,6 +7,31 @@ function App() {
   const [resolution, setResolution] = useState("704x512");
   const [status, setStatus] = useState("READY");
   const [videoUrl, setVideoUrl] = useState("");
+  const [activeProvider, setActiveProvider] = useState("loading...");
+   useEffect(() => {
+    const loadProvider = async () => {
+      try {
+        const response = await fetch(
+          "http://127.0.0.1:8000/providers"
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error("Provider status request failed.");
+        }
+
+        setActiveProvider(data.active_provider);
+      } catch (error) {
+        console.error(error);
+        setActiveProvider("offline");
+      }
+    };
+
+    loadProvider();
+  }, []);
+
+
 
   const generateVideo = async () => {
     if (!prompt.trim()) {
@@ -89,7 +114,7 @@ function App() {
 
         <div className="status">
           <span className="status-dot"></span>
-          LTX ONLINE
+         {activeProvider.toUpperCase()} ONLINE
         </div>
       </header>
 
