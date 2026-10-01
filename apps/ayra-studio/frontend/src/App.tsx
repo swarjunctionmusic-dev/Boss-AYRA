@@ -8,6 +8,7 @@ function App() {
   const [status, setStatus] = useState("READY");
   const [videoUrl, setVideoUrl] = useState("");
   const [activeProvider, setActiveProvider] = useState("loading...");
+  const [selectedProvider, setSelectedProvider] = useState("");
   const [textToVideo, setTextToVideo] = useState(false);
 const [imageToVideo, setImageToVideo] = useState(false);
 const [videoToVideo, setVideoToVideo] = useState(false);
@@ -25,6 +26,7 @@ const [videoToVideo, setVideoToVideo] = useState(false);
         }
 
         setActiveProvider(data.active_provider);
+        setSelectedProvider(data.active_provider);
         setTextToVideo(data.capabilities?.text_to_video ?? false);
 setImageToVideo(data.capabilities?.image_to_video ?? false);
 setVideoToVideo(data.capabilities?.video_to_video ?? false);
@@ -134,6 +136,18 @@ setVideoToVideo(data.capabilities?.video_to_video ?? false);
           <div className="section-title">
             <span>CREATE VIDEO</span>
           </div>
+          <div className="provider-selector">
+  <label>VIDEO PROVIDER</label>
+
+  <select
+    value={selectedProvider}
+    onChange={(event) =>
+      setSelectedProvider(event.target.value)
+    }
+  >
+    <option value="ltx">LTX</option>
+  </select>
+</div>
 
           <label>VIDEO PROMPT</label>
 
