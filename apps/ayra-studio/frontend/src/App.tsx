@@ -60,6 +60,7 @@ setVideoToVideo(data.capabilities?.video_to_video ?? false);
           prompt: prompt,
           duration: Number(duration),
           resolution: resolution,
+          provider: selectedProvider,
         }),
       });
 
