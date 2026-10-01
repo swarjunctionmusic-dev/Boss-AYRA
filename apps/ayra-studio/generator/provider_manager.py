@@ -1,11 +1,13 @@
 ﻿from generator.providers.base import VideoProvider
 from generator.providers.ltx_adapter import LTXProviderAdapter
+from generator.providers.cloud_adapter import CloudProviderAdapter
 
 
 class ProviderManager:
     def __init__(self):
         self.providers: dict[str, VideoProvider] = {
             "ltx": LTXProviderAdapter(),
+            "cloud": CloudProviderAdapter(),
         }
 
     def register(
