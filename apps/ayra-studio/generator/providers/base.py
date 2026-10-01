@@ -11,3 +11,10 @@ class VideoProvider(ABC):
         resolution: str,
     ) -> dict:
         pass
+
+    def capabilities(self) -> dict:
+        return {
+            "text_to_video": True,
+            "image_to_video": False,
+            "video_to_video": False,
+        }
