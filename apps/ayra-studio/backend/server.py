@@ -164,7 +164,10 @@ class AYRAHandler(BaseHTTPRequestHandler):
                 "prompt",
                 ""
             ).strip()
-
+            requested_provider = data.get(
+    "provider",
+    ACTIVE_VIDEO_PROVIDER
+)
             if not prompt:
                 self.send_json(
                     {
@@ -216,7 +219,7 @@ class AYRAHandler(BaseHTTPRequestHandler):
             print("===================================")
             print("Generating video...")
             # Video generation through Provider Manager
-            provider = provider_manager.get(ACTIVE_VIDEO_PROVIDER)
+            provider = provider_manager.get(requested_provider)
 
             result = provider.generate(
                 prompt=prompt,
