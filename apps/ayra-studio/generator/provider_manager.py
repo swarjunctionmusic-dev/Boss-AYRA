@@ -8,6 +8,13 @@ class ProviderManager:
             "ltx": LTXProviderAdapter(),
         }
 
+    def register(
+        self,
+        name: str,
+        provider: VideoProvider,
+    ) -> None:
+        self.providers[name] = provider
+
     def available_providers(self) -> list[str]:
         return list(self.providers.keys())
 
