@@ -1,4 +1,5 @@
-﻿from http.server import BaseHTTPRequestHandler, HTTPServer
+﻿from backend.config import ACTIVE_VIDEO_PROVIDER
+from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
 import sys
 from pathlib import Path
@@ -199,7 +200,7 @@ class AYRAHandler(BaseHTTPRequestHandler):
             print("===================================")
             print("Generating video...")
             # Video generation through Provider Manager
-            provider = provider_manager.get("ltx")
+            provider = provider_manager.get(ACTIVE_VIDEO_PROVIDER)
 
             result = provider.generate(
                 prompt=prompt,
