@@ -1,14 +1,9 @@
-﻿from pathlib import Path
-
-from generator.providers.base import VideoProvider
-from engine.providers.ltx_video_provider import LTXVideoProvider
+﻿from generator.providers.base import VideoProvider
+from generator.ltx_generator import generate_video
 
 
 class LTXProviderAdapter(VideoProvider):
-    """Adapter that exposes the existing AYRA LTX provider through VideoProvider."""
-
-    def __init__(self, output_dir=None):
-        self.provider = LTXVideoProvider(output_dir=output_dir)
+    """Adapter for AYRA's working LTX generator."""
 
     def generate(
         self,
@@ -16,12 +11,20 @@ class LTXProviderAdapter(VideoProvider):
         duration: float,
         resolution: str,
     ) -> dict:
-        width, height = map(int, resolution.lower().split("x"))
 
-        return self.provider.generate(
-            prompt=prompt,
-            duration_seconds=duration,
-            width=width,
-            height=height,
+        width, height = map(
+            int,
+            resolution.lower().split("x")
         )
 
+        output_file = generate_video(
+            prompt=prompt,
+            duration=duration,
+            height=height,
+            width=width,
+        )
+
+        return {
+            "video_path": str(output_file),
+            "provider": "Lightricks/ltx-video-distilled",
+        }

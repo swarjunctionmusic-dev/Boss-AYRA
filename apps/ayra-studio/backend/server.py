@@ -1,4 +1,4 @@
-from http.server import BaseHTTPRequestHandler, HTTPServer
+﻿from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
 import sys
 from pathlib import Path
@@ -20,7 +20,9 @@ OUTPUT_DIR = STUDIO_ROOT / "outputs"
 sys.path.insert(0, str(GENERATOR_DIR))
 
 # Existing LTX generator import
-from ltx_generator import generate_video
+from generator.provider_manager import ProviderManager
+
+provider_manager = ProviderManager()
 
 
 class AYRAHandler(BaseHTTPRequestHandler):
@@ -196,15 +198,16 @@ class AYRAHandler(BaseHTTPRequestHandler):
             print("Resolution:", resolution)
             print("===================================")
             print("Generating video...")
-            print()
+            # Video generation through Provider Manager
+            provider = provider_manager.get("ltx")
 
-            # Actual LTX generation
-            output_file = generate_video(
+            result = provider.generate(
                 prompt=prompt,
                 duration=duration,
-                height=height,
-                width=width
+                resolution=resolution
             )
+
+            output_file = Path(result["video_path"])
 
             print()
             print("===================================")
@@ -279,3 +282,4 @@ if __name__ == "__main__":
     finally:
 
         server.server_close()
+
