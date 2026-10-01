@@ -109,6 +109,20 @@ class AYRAHandler(BaseHTTPRequestHandler):
 
                 return
 
+                               # Provider information
+        if self.path == "/providers":
+
+            self.send_json(
+                {
+                    "success": True,
+                    "active_provider": ACTIVE_VIDEO_PROVIDER,
+                    "providers": provider_manager.available_providers(),
+                }
+            )
+
+            return
+
+        # Unknown GET endpoint
         # Unknown GET endpoint
         self.send_json(
             {
