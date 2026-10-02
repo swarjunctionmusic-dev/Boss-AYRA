@@ -1,8 +1,12 @@
+import os
+
+import fal_client
+
 from generator.providers.base import VideoProvider
 
 
 class CloudProviderAdapter(VideoProvider):
-    """Base adapter for a future cloud video provider."""
+    """FAL.ai cloud video provider adapter."""
 
     def generate(
         self,
@@ -10,8 +14,14 @@ class CloudProviderAdapter(VideoProvider):
         duration: float,
         resolution: str,
     ) -> dict:
+
+        if not os.environ.get("FAL_KEY"):
+            raise RuntimeError(
+                "FAL_KEY is not configured."
+            )
+
         raise RuntimeError(
-            "Cloud video provider is not configured yet."
+            "FAL cloud generation endpoint is ready to be configured."
         )
 
     def capabilities(self) -> dict:
