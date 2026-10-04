@@ -1,9 +1,9 @@
-{
+﻿{
   "app": "Boss AYRA",
   "channel": "stable",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "minimum_supported_version": "0.1.0",
-  "release_url": "",
+  "release_url": "https://github.com/swarjunctionmusic-dev/Boss-AYRA/releases",
   "package_url": "",
   "sha256": "",
   "published_at": ""
