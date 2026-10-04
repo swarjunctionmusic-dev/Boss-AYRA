@@ -54,3 +54,9 @@ Thumbs.db
 .vscode/
 apps/ayra-studio/backend/server.py.backup
 apps/ayra-studio/generator/providers/ltx_adapter.py.backup
+
+# AYRA updater runtime/build data
+/scripts/updater/downloads/
+/scripts/updater/backups/
+/scripts/updater/staging/
+/scripts/updater/release-staging/
