@@ -1,20 +1,43 @@
-﻿import { useState } from "react";
+﻿import { useEffect, useState } from "react";
 import "./App.css";
+
+const API = "http://127.0.0.1:8000";
 
 type ChatMessage = {
   role: "user" | "ayra";
   text: string;
 };
 
+type Memory = {
+  id: number;
+  content: string;
+  category: string;
+  created_at: string;
+};
+
+type Task = {
+  id: number;
+  title: string;
+  description: string;
+  status: string;
+};
+
 function App() {
   const [activeTab, setActiveTab] = useState("Chat");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
+  const [voiceListening, setVoiceListening] = useState(false);
+
+  const [memories, setMemories] = useState<Memory[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [memoryInput, setMemoryInput] = useState("");
+  const [taskInput, setTaskInput] = useState("");
 
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "ayra",
-      text: "Hi Boss 👋 I'm ready. Tell me what you want to research, create, automate or control.",
+      text: "Hi Boss 👋 I'm ready. Memory, tasks, voice, research, creation — tell me what you need.",
     },
   ]);
 
@@ -29,8 +52,33 @@ function App() {
     { name: "Studio", icon: "🎬" },
   ];
 
-  const handleSend = async () => {
-    const text = message.trim();
+  const loadMemory = async () => {
+    try {
+      const response = await fetch(`${API}/api/memory`);
+      const data = await response.json();
+      setMemories(data.memories ?? []);
+    } catch {
+      console.error("Memory service unavailable");
+    }
+  };
+
+  const loadTasks = async () => {
+    try {
+      const response = await fetch(`${API}/api/tasks`);
+      const data = await response.json();
+      setTasks(data.tasks ?? []);
+    } catch {
+      console.error("Task service unavailable");
+    }
+  };
+
+  useEffect(() => {
+    loadMemory();
+    loadTasks();
+  }, []);
+
+  const handleSend = async (voiceText?: string) => {
+    const text = (voiceText ?? message).trim();
 
     if (!text || loading) return;
 
@@ -43,18 +91,15 @@ function App() {
     setLoading(true);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/chat", {
+      const response = await fetch(`${API}/api/chat`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: text,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text }),
       });
 
       if (!response.ok) {
-        throw new Error(`Server error: ${response.status}`);
+        const detail = await response.text();
+        throw new Error(detail || `Server error: ${response.status}`);
       }
 
       const data = await response.json();
@@ -73,12 +118,126 @@ function App() {
         ...previous,
         {
           role: "ayra",
-          text: "Sorry Boss, backend se connection nahi ho pa raha. Please check karo ki AYRA backend running hai.",
+          text: "Sorry Boss, AYRA backend se connection/API issue aa raha hai. Backend check karo.",
         },
       ]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const startVoiceInput = () => {
+    const browser = window as any;
+    const SpeechRecognition =
+      browser.SpeechRecognition || browser.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      setMessages((previous) => [
+        ...previous,
+        {
+          role: "ayra",
+          text: "Boss, is browser mein speech recognition available nahi hai. Chrome mein try karo.",
+        },
+      ]);
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-IN";
+    recognition.interimResults = false;
+    recognition.continuous = false;
+
+    setVoiceListening(true);
+
+    recognition.onresult = (event: any) => {
+      const text = event.results?.[0]?.[0]?.transcript ?? "";
+      if (text) {
+        setMessage(text);
+        handleSend(text);
+      }
+    };
+
+    recognition.onerror = () => setVoiceListening(false);
+    recognition.onend = () => setVoiceListening(false);
+
+    recognition.start();
+  };
+
+  const speak = async (text: string) => {
+    if (!text || speaking) return;
+
+    try {
+      setSpeaking(true);
+
+      const response = await fetch(`${API}/api/speech`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+
+      if (!response.ok) throw new Error("Speech API failed");
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+
+      audio.onended = () => {
+        URL.revokeObjectURL(url);
+        setSpeaking(false);
+      };
+
+      await audio.play();
+    } catch (error) {
+      console.error(error);
+      setSpeaking(false);
+    }
+  };
+
+  const addMemory = async () => {
+    const content = memoryInput.trim();
+    if (!content) return;
+
+    await fetch(`${API}/api/memory`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        content,
+        category: "boss",
+      }),
+    });
+
+    setMemoryInput("");
+    await loadMemory();
+  };
+
+  const removeMemory = async (id: number) => {
+    await fetch(`${API}/api/memory/${id}`, {
+      method: "DELETE",
+    });
+
+    await loadMemory();
+  };
+
+  const addTask = async () => {
+    const title = taskInput.trim();
+    if (!title) return;
+
+    await fetch(`${API}/api/tasks`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title }),
+    });
+
+    setTaskInput("");
+    await loadTasks();
+  };
+
+  const completeTask = async (id: number) => {
+    await fetch(`${API}/api/tasks/${id}/complete`, {
+      method: "POST",
+    });
+
+    await loadTasks();
   };
 
   return (
@@ -114,11 +273,6 @@ function App() {
         </nav>
 
         <div className="sidebar-bottom">
-          <button className="nav-item">
-            <span>⚙️</span>
-            Settings
-          </button>
-
           <div className="system-status">
             <span className="status-dot"></span>
             <div>
@@ -132,14 +286,11 @@ function App() {
       <main className="main">
         <header className="topbar">
           <div>
-            <span className="eyebrow">
-              {activeTab === "Studio" ? "AI VIDEO STUDIO" : "COMMAND CENTER"}
-            </span>
+            <span className="eyebrow">AYRA COMMAND CENTER</span>
             <h2>{activeTab}</h2>
           </div>
 
           <div className="top-actions">
-            <button className="icon-button">🔔</button>
             <button className="boss-button">
               <span className="status-dot"></span>
               BOSS
@@ -147,115 +298,7 @@ function App() {
           </div>
         </header>
 
-        {activeTab === "Studio" ? (
-          <section className="studio-page">
-            <div className="studio-heading">
-              <div>
-                <span className="eyebrow">GENERATED MEDIA</span>
-                <h3>AYRA Studio</h3>
-                <p>
-                  Real AI-generated video from the AYRA Director → LTX pipeline.
-                </p>
-              </div>
-
-              <span className="studio-status">
-                <span className="status-dot"></span>
-                VIDEO READY
-              </span>
-            </div>
-
-            <div className="video-card">
-              <div className="video-header">
-                <div>
-                  <span className="eyebrow">SCENE 01</span>
-                  <h3>The Last Light</h3>
-                </div>
-                <span className="video-provider">
-                  LTX VIDEO
-                </span>
-              </div>
-
-              <div className="video-preview">
-                <video
-                  controls
-                  preload="metadata"
-                  src="/generated/scene-01.mp4"
-                >
-                  Your browser does not support video playback.
-                </video>
-              </div>
-
-              <div className="video-info">
-                <div>
-                  <small>Provider</small>
-                  <strong>Lightricks LTX Video</strong>
-                </div>
-
-                <div>
-                  <small>Pipeline</small>
-                  <strong>Director → LTX</strong>
-                </div>
-
-                <div>
-                  <small>Format</small>
-                  <strong>MP4</strong>
-                </div>
-
-                <div>
-                  <small>Status</small>
-                  <strong className="success-text">Generated</strong>
-                </div>
-              </div>
-            </div>
-
-            <div className="studio-scenes">
-              <div className="section-heading">
-                <div>
-                  <span className="eyebrow">TIMELINE</span>
-                  <h3>Generated Scenes</h3>
-                </div>
-              </div>
-
-              <div className="scene-strip">
-                <div className="scene-card active-scene">
-                  <span>01</span>
-                  <strong>Scene 01</strong>
-                  <small>Generated MP4</small>
-                </div>
-
-                <div className="scene-card">
-                  <span>02</span>
-                  <strong>Scene 02</strong>
-                  <small>Waiting</small>
-                </div>
-
-                <div className="scene-card">
-                  <span>03</span>
-                  <strong>Scene 03</strong>
-                  <small>Waiting</small>
-                </div>
-
-                <div className="scene-card">
-                  <span>04</span>
-                  <strong>Scene 04</strong>
-                  <small>Waiting</small>
-                </div>
-
-                <div className="scene-card">
-                  <span>05</span>
-                  <strong>Scene 05</strong>
-                  <small>Waiting</small>
-                </div>
-
-                <div className="scene-card">
-                  <span>06</span>
-                  <strong>Scene 06</strong>
-                  <small>Waiting</small>
-                </div>
-              </div>
-            </div>
-          </section>
-        ) : (
+        {activeTab === "Chat" && (
           <section className="dashboard">
             <div className="hero-card">
               <div className="hero-glow"></div>
@@ -270,18 +313,23 @@ function App() {
               </div>
 
               <div className="hero-content">
-                <span className="eyebrow">AYRA CORE</span>
+                <span className="eyebrow">AYRA CORE v0.1.1</span>
                 <h3>Ready when you are, Boss.</h3>
                 <p>
-                  Your personal AI command center for conversations,
-                  research, automation, files and computer control.
+                  Chat, persistent memory, tasks and voice are now connected.
                 </p>
 
                 <div className="hero-buttons">
-                  <button className="primary-button">
-                    🎙️ Start Voice Mode
+                  <button
+                    className="primary-button"
+                    onClick={() => setActiveTab("Voice")}
+                  >
+                    🎙️ Voice Mode
                   </button>
-                  <button className="secondary-button">
+                  <button
+                    className="secondary-button"
+                    onClick={() => setActiveTab("Tasks")}
+                  >
                     ⚡ New Task
                   </button>
                 </div>
@@ -293,30 +341,30 @@ function App() {
                 <span>🧠</span>
                 <div>
                   <small>Memory</small>
+                  <strong>{memories.length} Saved</strong>
+                </div>
+              </div>
+
+              <div className="stat-card">
+                <span>⚡</span>
+                <div>
+                  <small>Tasks</small>
+                  <strong>{tasks.length} Total</strong>
+                </div>
+              </div>
+
+              <div className="stat-card">
+                <span>🎙️</span>
+                <div>
+                  <small>Voice</small>
                   <strong>Ready</strong>
-                </div>
-              </div>
-
-              <div className="stat-card">
-                <span>🔎</span>
-                <div>
-                  <small>Research</small>
-                  <strong>Online</strong>
-                </div>
-              </div>
-
-              <div className="stat-card">
-                <span>💻</span>
-                <div>
-                  <small>Computer</small>
-                  <strong>Connected</strong>
                 </div>
               </div>
 
               <div className="stat-card">
                 <span>🎬</span>
                 <div>
-                  <small>AYRA Studio</small>
+                  <small>Studio</small>
                   <strong>Ready</strong>
                 </div>
               </div>
@@ -345,6 +393,15 @@ function App() {
                     <p key={index}>
                       {chat.role === "user" ? "👤 " : ""}
                       {chat.text}
+                      {chat.role === "ayra" && (
+                        <button
+                          className="small-button"
+                          onClick={() => speak(chat.text)}
+                          title="Speak"
+                        >
+                          🔊
+                        </button>
+                      )}
                     </p>
                   ))}
 
@@ -368,13 +425,18 @@ function App() {
 
                 <div className="input-actions">
                   <div>
-                    <button className="small-button">📎</button>
-                    <button className="small-button">🎙️</button>
+                    <button
+                      className="small-button"
+                      onClick={startVoiceInput}
+                      title="Voice input"
+                    >
+                      {voiceListening ? "🔴" : "🎙️"}
+                    </button>
                   </div>
 
                   <button
                     className="send-button"
-                    onClick={handleSend}
+                    onClick={() => handleSend()}
                     disabled={loading}
                   >
                     {loading ? "Thinking..." : "Send ➤"}
@@ -382,39 +444,229 @@ function App() {
                 </div>
               </div>
             </div>
+          </section>
+        )}
 
-            <div className="quick-section">
-              <div className="section-heading">
-                <div>
-                  <span className="eyebrow">SHORTCUTS</span>
-                  <h3>Quick Actions</h3>
+        {activeTab === "Voice" && (
+          <section className="dashboard">
+            <div className="hero-card">
+              <div className="ayra-avatar">
+                <div className="avatar-ring"></div>
+                <div className="avatar-face">
+                  <div className="eye left"></div>
+                  <div className="eye right"></div>
+                  <div className="mouth"></div>
                 </div>
               </div>
 
-              <div className="quick-grid">
-                <button>
-                  <span>🔬</span>
-                  <strong>Research</strong>
-                  <small>Deep research a topic</small>
-                </button>
+              <div className="hero-content">
+                <span className="eyebrow">VOICE COMMAND</span>
+                <h3>{voiceListening ? "I'm listening, Boss..." : "Talk to AYRA"}</h3>
+                <p>
+                  Browser microphone input + AYRA voice output.
+                </p>
 
-                <button onClick={() => setActiveTab("Studio")}>
-                  <span>🎬</span>
-                  <strong>Create Video</strong>
-                  <small>Open AYRA Studio</small>
-                </button>
+                <div className="hero-buttons">
+                  <button
+                    className="primary-button"
+                    onClick={startVoiceInput}
+                  >
+                    {voiceListening ? "🔴 Listening..." : "🎙️ Start Listening"}
+                  </button>
 
-                <button>
-                  <span>💻</span>
-                  <strong>Control Computer</strong>
-                  <small>Manage your PC</small>
-                </button>
+                  <button
+                    className="secondary-button"
+                    disabled={speaking}
+                    onClick={() =>
+                      speak("Hi Boss. AYRA is online and ready for your command.")
+                    }
+                  >
+                    {speaking ? "🔊 Speaking..." : "🔊 Test AYRA Voice"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
 
-                <button>
-                  <span>📁</span>
-                  <strong>Manage Files</strong>
-                  <small>Work with your files</small>
+        {activeTab === "Memory" && (
+          <section className="dashboard">
+            <div className="chat-card">
+              <div className="section-heading">
+                <div>
+                  <span className="eyebrow">PERSISTENT MEMORY</span>
+                  <h3>AYRA Memory</h3>
+                </div>
+              </div>
+
+              <div className="chat-input-area">
+                <textarea
+                  value={memoryInput}
+                  onChange={(e) => setMemoryInput(e.target.value)}
+                  placeholder="Tell AYRA something to remember..."
+                />
+                <div className="input-actions">
+                  <button className="send-button" onClick={addMemory}>
+                    Save Memory +
+                  </button>
+                </div>
+              </div>
+
+              <div className="welcome-message">
+                <div className="mini-avatar">🧠</div>
+                <div>
+                  {memories.length === 0 && (
+                    <p>No memories saved yet.</p>
+                  )}
+
+                  {memories.map((memory) => (
+                    <p key={memory.id}>
+                      <strong>{memory.category}:</strong> {memory.content}
+                      {" "}
+                      <button
+                        className="small-button"
+                        onClick={() => removeMemory(memory.id)}
+                      >
+                        🗑️
+                      </button>
+                    </p>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {activeTab === "Tasks" && (
+          <section className="dashboard">
+            <div className="chat-card">
+              <div className="section-heading">
+                <div>
+                  <span className="eyebrow">TASK AUTOMATION</span>
+                  <h3>Boss Tasks</h3>
+                </div>
+              </div>
+
+              <div className="chat-input-area">
+                <textarea
+                  value={taskInput}
+                  onChange={(e) => setTaskInput(e.target.value)}
+                  placeholder="Add a task for AYRA..."
+                />
+
+                <div className="input-actions">
+                  <button className="send-button" onClick={addTask}>
+                    Create Task +
+                  </button>
+                </div>
+              </div>
+
+              <div className="welcome-message">
+                <div className="mini-avatar">⚡</div>
+                <div>
+                  {tasks.length === 0 && <p>No tasks yet.</p>}
+
+                  {tasks.map((task) => (
+                    <p key={task.id}>
+                      {task.status === "completed" ? "✅ " : "⏳ "}
+                      <strong>{task.title}</strong>
+                      {task.status !== "completed" && (
+                        <button
+                          className="small-button"
+                          onClick={() => completeTask(task.id)}
+                        >
+                          ✓
+                        </button>
+                      )}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {activeTab === "Studio" && (
+          <section className="studio-page">
+            <div className="studio-heading">
+              <div>
+                <span className="eyebrow">GENERATED MEDIA</span>
+                <h3>AYRA Studio</h3>
+                <p>
+                  Connected to the existing AYRA Studio video pipeline.
+                </p>
+              </div>
+
+              <span className="studio-status">
+                <span className="status-dot"></span>
+                READY
+              </span>
+            </div>
+
+            <div className="video-card">
+              <div className="video-header">
+                <div>
+                  <span className="eyebrow">VIDEO ENGINE</span>
+                  <h3>LTX + Free WAN</h3>
+                </div>
+                <span className="video-provider">AI VIDEO</span>
+              </div>
+
+              <div className="video-info">
+                <div>
+                  <small>Backend</small>
+                  <strong>AYRA Studio :8000</strong>
+                </div>
+
+                <div>
+                  <small>Provider</small>
+                  <strong>LTX</strong>
+                </div>
+
+                <div>
+                  <small>Fallback</small>
+                  <strong>Free WAN</strong>
+                </div>
+
+                <div>
+                  <small>Status</small>
+                  <strong className="success-text">Connected</strong>
+                </div>
+              </div>
+
+              <div className="hero-buttons">
+                <button
+                  className="primary-button"
+                  onClick={() => window.open("http://localhost:5173", "_blank")}
+                >
+                  🎬 Open Studio
                 </button>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {(activeTab === "Research" ||
+          activeTab === "Files" ||
+          activeTab === "Computer") && (
+          <section className="dashboard">
+            <div className="hero-card">
+              <div className="hero-content">
+                <span className="eyebrow">MODULE FOUNDATION</span>
+                <h3>{activeTab} module</h3>
+                <p>
+                  AYRA Core is ready. This module is reserved for the next
+                  integration milestone.
+                </p>
+
+                <div className="hero-buttons">
+                  <button
+                    className="primary-button"
+                    onClick={() => setActiveTab("Chat")}
+                  >
+                    💬 Back to Chat
+                  </button>
+                </div>
               </div>
             </div>
           </section>

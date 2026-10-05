@@ -1,0 +1,4 @@
+﻿# AYRA local persistent data
+*.db
+*.sqlite
+*.sqlite3
