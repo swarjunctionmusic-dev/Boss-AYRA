@@ -731,15 +731,43 @@ def print_manifest_status() -> None:
     )
 
 
-if __name__ == "__main__":
+def main() -> int:
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        prog="ayra-updater",
+        description="Boss AYRA automatic updater",
+    )
+
+    parser.add_argument(
+        "command",
+        nargs="?",
+        choices=["check", "status"],
+        default="check",
+        help="Updater command",
+    )
+
+    args = parser.parse_args()
+
     try:
-        check_for_update()
+        if args.command == "status":
+            print_manifest_status()
+            return 0
+
+        updated = check_for_update()
+
+        if updated:
+            print("Update available: YES")
+        else:
+            print("Update available: NO")
+
+        return 0
 
     except Exception as exc:
-        print(
-            "Update check   : FAIL"
-        )
-        print(
-            f"Error          : {exc}"
-        )
-        raise
+        print("Update check   : FAIL")
+        print(f"Error          : {exc}")
+        return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
