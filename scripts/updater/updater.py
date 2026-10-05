@@ -742,7 +742,7 @@ def main() -> int:
     parser.add_argument(
         "command",
         nargs="?",
-        choices=["check", "status"],
+        choices=["check", "status", "update"],
         default="check",
         help="Updater command",
     )
@@ -752,6 +752,48 @@ def main() -> int:
     try:
         if args.command == "status":
             print_manifest_status()
+            return 0
+
+        if args.command == "update":
+            root_dir = UPDATER_DIR.parent.parent
+            backup_dir = UPDATER_DIR / "backup"
+            staging_dir = UPDATER_DIR / "staging"
+            downloads_dir = UPDATER_DIR / "downloads"
+
+            required_files = [
+                "scripts/updater/updater.py",
+                "scripts/updater/version.json",
+                "scripts/updater/manifest.json",
+            ]
+
+            manifest = load_remote_manifest(REMOTE_MANIFEST_URL)
+            current_version = get_current_version()
+
+            comparison = compare_versions(
+                current_version,
+                manifest.version,
+            )
+
+            print("========================================")
+            print("        AYRA UPDATE COMMAND")
+            print("========================================")
+            print(f"Current version : {current_version}")
+            print(f"Remote version  : {manifest.version}")
+            print(f"Channel         : {manifest.channel}")
+
+            if comparison >= 0:
+                print("Status          : ALREADY UP TO DATE")
+                print("========================================")
+                return 0
+
+            run_update(
+                target_dir=root_dir,
+                backup_dir=backup_dir,
+                staging_dir=staging_dir,
+                downloads_dir=downloads_dir,
+                required_files=required_files,
+            )
+
             return 0
 
         updated = check_for_update()
