@@ -242,6 +242,95 @@ def check_for_update() -> bool:
     return False
 
 
+
+def run_update(
+    target_dir: Path,
+    backup_dir: Path,
+    staging_dir: Path,
+    downloads_dir: Path,
+    required_files: list[str],
+) -> bool:
+    current = load_manifest()
+
+    remote_url = (
+        REMOTE_MANIFEST_URL
+        + "?cb="
+        + str(int(__import__("time").time()))
+    )
+
+    remote = load_remote_manifest(remote_url)
+
+    comparison = compare_versions(
+        current.version,
+        remote.version,
+    )
+
+    print("========================================")
+    print("        AYRA UPDATE PIPELINE")
+    print("========================================")
+    print(f"Current version : {current.version}")
+    print(f"Remote version  : {remote.version}")
+    print(f"Channel         : {remote.channel}")
+
+    if comparison >= 0:
+        if comparison == 0:
+            print("Status          : UP TO DATE")
+        else:
+            print("Status          : CURRENT IS NEWER")
+        print("========================================")
+        return False
+
+    if not remote.package_url:
+        raise RuntimeError("Remote package URL is missing.")
+
+    if not remote.sha256:
+        raise RuntimeError("Remote SHA-256 is missing.")
+
+    downloads_dir.mkdir(parents=True, exist_ok=True)
+
+    package_path = (
+        downloads_dir
+        / f"Boss-AYRA-v{remote.version}.zip"
+    )
+
+    print("Step 1/5       : Downloading package...")
+    download_package(
+        remote.package_url,
+        package_path,
+    )
+
+    print("Step 2/5       : Verifying SHA-256...")
+    if not verify_sha256(
+        package_path,
+        remote.sha256,
+    ):
+        raise RuntimeError(
+            "SHA-256 verification failed."
+        )
+
+    print("Step 3/5       : Applying tested update pipeline...")
+
+    success = apply_update(
+        package_path=package_path,
+        expected_sha256=remote.sha256,
+        target_dir=target_dir,
+        backup_dir=backup_dir,
+        staging_dir=staging_dir,
+        required_files=required_files,
+    )
+
+    if not success:
+        raise RuntimeError(
+            "Update installation failed."
+        )
+
+    print("Step 4/5       : Installation verified.")
+    print("Step 5/5       : UPDATE SUCCESSFUL")
+    print("========================================")
+
+    return True
+
+
 def download_package(
     package_url: str,
     destination: Path,
