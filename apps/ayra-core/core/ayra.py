@@ -1,8 +1,103 @@
 ﻿import json
 import urllib.request
 import urllib.error
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+
+# Ensure the AYRA Core project root is importable when ayra.py
+# is launched directly as a script.
+AYRA_CORE_ROOT = Path(__file__).resolve().parents[1]
+
+if str(AYRA_CORE_ROOT) not in sys.path:
+    sys.path.insert(0, str(AYRA_CORE_ROOT))
+
+
+def run_startup_auto_update():
+    """
+    Check for a Boss AYRA update before starting the assistant.
+    If an update is installed successfully, restart AYRA automatically.
+    """
+    if os.getenv("AYRA_SKIP_AUTO_UPDATE") == "1":
+        return
+
+    root_dir = Path(__file__).resolve().parents[3]
+    updater = root_dir / "scripts" / "updater" / "updater.py"
+
+    if not updater.exists():
+        print("AYRA AUTO-UPDATE: updater not found, continuing startup.")
+        return
+
+    print()
+    print("=" * 40)
+    print("AYRA AUTO-UPDATE")
+    print("=" * 40)
+
+    try:
+        result = subprocess.run(
+            [sys.executable, str(updater), "update"],
+            cwd=str(root_dir),
+            capture_output=True,
+            text=True,
+            timeout=600,
+        )
+
+        if result.stdout:
+            print(result.stdout, end="")
+
+        if result.stderr:
+            print(result.stderr, end="")
+
+        if "UPDATE SUCCESSFUL" in result.stdout:
+            print()
+            print("AYRA AUTO-UPDATE: Update installed.")
+            print("AYRA AUTO-UPDATE: Restarting AYRA...")
+
+            os.execv(
+                sys.executable,
+                [
+                    sys.executable,
+                    str(Path(__file__).resolve()),
+                    *sys.argv[1:],
+                ],
+            )
+
+        if result.returncode != 0:
+            print(
+                f"AYRA AUTO-UPDATE: Check/update failed "
+                f"(exit code {result.returncode})."
+            )
+            print("AYRA AUTO-UPDATE: Continuing normal startup.")
+
+    except subprocess.TimeoutExpired:
+        print("AYRA AUTO-UPDATE: Timed out after 10 minutes.")
+        print("AYRA AUTO-UPDATE: Continuing normal startup.")
+
+    except Exception as error:
+        print(f"AYRA AUTO-UPDATE: {error}")
+        print("AYRA AUTO-UPDATE: Continuing normal startup.")
+
 
 from core.config import APP_NAME, APP_VERSION
+
+# Keep AYRA Core display version synchronized with the updater.
+try:
+    _version_file = (
+        Path(__file__).resolve().parents[3]
+        / "scripts"
+        / "updater"
+        / "version.json"
+    )
+
+    if _version_file.exists():
+        with _version_file.open("r", encoding="utf-8-sig") as _file:
+            _version_data = json.load(_file)
+
+        APP_VERSION = str(_version_data.get("version", APP_VERSION))
+except Exception:
+    pass
 from core.studio_client import generate_video
 
 
@@ -154,6 +249,8 @@ class AYRA:
 
 
 if __name__ == "__main__":
+    run_startup_auto_update()
+
     ayra = AYRA()
 
     print("=" * 40)
@@ -176,7 +273,4 @@ if __name__ == "__main__":
         except KeyboardInterrupt:
             print("\nAYRA: Goodbye, Boss.")
             break
-
-
-
 
