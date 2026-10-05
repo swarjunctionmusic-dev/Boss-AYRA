@@ -70,7 +70,41 @@ def load_manifest(
 
 
 def get_current_version() -> str:
-    return load_manifest().version
+    version_path = UPDATER_DIR / "version.json"
+
+    if not version_path.exists():
+        raise FileNotFoundError(
+            f"Local version file not found: {version_path}"
+        )
+
+    raw = version_path.read_text(
+        encoding="utf-8-sig"
+    )
+
+    data = json.loads(raw)
+    version = data.get("version")
+
+    if not version:
+        raise ValueError(
+            "Local version file is missing 'version'."
+        )
+
+    return str(version)
+
+
+def set_current_version(version: str) -> None:
+    version_path = UPDATER_DIR / "version.json"
+
+    data = {
+        "app": "Boss AYRA",
+        "version": str(version),
+        "channel": "stable",
+    }
+
+    version_path.write_text(
+        json.dumps(data, indent=2) + "\n",
+        encoding="utf-8",
+    )
 
 
 def parse_version(
@@ -204,7 +238,7 @@ REMOTE_MANIFEST_URL = (
 
 
 def check_for_update() -> bool:
-    current = load_manifest()
+    current_version = get_current_version()
 
     remote_url = (
         REMOTE_MANIFEST_URL
@@ -215,14 +249,14 @@ def check_for_update() -> bool:
     remote = load_remote_manifest(remote_url)
 
     comparison = compare_versions(
-        current.version,
+        current_version,
         remote.version,
     )
 
     print("========================================")
     print("        AYRA UPDATE CHECK")
     print("========================================")
-    print(f"Current version : {current.version}")
+    print(f"Current version : {current_version}")
     print(f"Remote version  : {remote.version}")
     print(f"Channel         : {remote.channel}")
 
@@ -250,7 +284,7 @@ def run_update(
     downloads_dir: Path,
     required_files: list[str],
 ) -> bool:
-    current = load_manifest()
+    current_version = get_current_version()
 
     remote_url = (
         REMOTE_MANIFEST_URL
@@ -261,14 +295,14 @@ def run_update(
     remote = load_remote_manifest(remote_url)
 
     comparison = compare_versions(
-        current.version,
+        current_version,
         remote.version,
     )
 
     print("========================================")
     print("        AYRA UPDATE PIPELINE")
     print("========================================")
-    print(f"Current version : {current.version}")
+    print(f"Current version : {current_version}")
     print(f"Remote version  : {remote.version}")
     print(f"Channel         : {remote.channel}")
 
@@ -324,8 +358,14 @@ def run_update(
             "Update installation failed."
         )
 
-    print("Step 4/5       : Installation verified.")
-    print("Step 5/5       : UPDATE SUCCESSFUL")
+    print("Step 4/6       : Installation verified.")
+
+    set_current_version(remote.version)
+
+    print(
+        f"Step 5/6       : Local version updated to {remote.version}."
+    )
+    print("Step 6/6       : UPDATE SUCCESSFUL")
     print("========================================")
 
     return True
