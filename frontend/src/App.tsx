@@ -1,7 +1,7 @@
 ﻿import { useEffect, useState } from "react";
 import "./App.css";
 
-const API = "http://127.0.0.1:8000";
+const CORE_API = "http://127.0.0.1:8010";
 
 type ChatMessage = {
   role: "user" | "ayra";
@@ -24,6 +24,11 @@ type Task = {
 
 function App() {
   const [activeTab, setActiveTab] = useState("Chat");
+  const [videoPrompt, setVideoPrompt] = useState("");
+  const [videoDuration, setVideoDuration] = useState("2");
+  const [videoGenerating, setVideoGenerating] = useState(false);
+  const [videoUrl, setVideoUrl] = useState("");
+  const [videoError, setVideoError] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [speaking, setSpeaking] = useState(false);
@@ -54,7 +59,7 @@ function App() {
 
   const loadMemory = async () => {
     try {
-      const response = await fetch(`${API}/api/memory`);
+      const response = await fetch(`${CORE_API}/api/memory`);
       const data = await response.json();
       setMemories(data.memories ?? []);
     } catch {
@@ -64,7 +69,7 @@ function App() {
 
   const loadTasks = async () => {
     try {
-      const response = await fetch(`${API}/api/tasks`);
+      const response = await fetch(`${CORE_API}/api/tasks`);
       const data = await response.json();
       setTasks(data.tasks ?? []);
     } catch {
@@ -91,7 +96,7 @@ function App() {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API}/api/chat`, {
+      const response = await fetch(`${CORE_API}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: text }),
@@ -169,7 +174,7 @@ function App() {
     try {
       setSpeaking(true);
 
-      const response = await fetch(`${API}/api/speech`, {
+      const response = await fetch(`${CORE_API}/api/speech`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text }),
@@ -197,7 +202,7 @@ function App() {
     const content = memoryInput.trim();
     if (!content) return;
 
-    await fetch(`${API}/api/memory`, {
+    await fetch(`${CORE_API}/api/memory`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -211,7 +216,7 @@ function App() {
   };
 
   const removeMemory = async (id: number) => {
-    await fetch(`${API}/api/memory/${id}`, {
+    await fetch(`${CORE_API}/api/memory/${id}`, {
       method: "DELETE",
     });
 
@@ -222,7 +227,7 @@ function App() {
     const title = taskInput.trim();
     if (!title) return;
 
-    await fetch(`${API}/api/tasks`, {
+    await fetch(`${CORE_API}/api/tasks`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title }),
@@ -233,14 +238,60 @@ function App() {
   };
 
   const completeTask = async (id: number) => {
-    await fetch(`${API}/api/tasks/${id}/complete`, {
+    await fetch(`${CORE_API}/api/tasks/${id}/complete`, {
       method: "POST",
     });
 
     await loadTasks();
   };
 
-  return (
+  const generateStudioVideo = async () => {
+    if (!videoPrompt.trim()) {
+      setVideoError("Boss, pehle video prompt likho.");
+      return;
+    }
+
+    setVideoGenerating(true);
+    setVideoError("");
+    setVideoUrl("");
+
+    try {
+      const response = await fetch(`${CORE_API}/api/video`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          prompt: videoPrompt.trim(),
+          duration: Number(videoDuration),
+          resolution: "704x512",
+          provider: "ltx",
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || "Video generation failed.");
+      }
+
+      if (!data.video_url) {
+        throw new Error("Studio ne video URL return nahi kiya.");
+      }
+
+      setVideoUrl(data.video_url);
+    } catch (error) {
+      setVideoError(
+        error instanceof Error
+          ? error.message
+          : "AYRA Studio se video generate nahi ho paaya."
+      );
+    } finally {
+      setVideoGenerating(false);
+    }
+  };
+
+return (
     <div className="ayra-app">
       <aside className="sidebar">
         <div className="brand">
@@ -587,64 +638,89 @@ function App() {
         )}
 
         {activeTab === "Studio" && (
-          <section className="studio-page">
-            <div className="studio-heading">
-              <div>
-                <span className="eyebrow">GENERATED MEDIA</span>
-                <h3>AYRA Studio</h3>
-                <p>
-                  Connected to the existing AYRA Studio video pipeline.
-                </p>
-              </div>
-
-              <span className="studio-status">
-                <span className="status-dot"></span>
-                READY
-              </span>
+        <section className="studio-page">
+          <div className="studio-heading">
+            <div>
+              <small>Studio</small>
+              <h3>AYRA Studio</h3>
+              <p>
+                Generate videos directly from AYRA using the connected
+                LTX / Free WAN pipeline.
+              </p>
             </div>
 
-            <div className="video-card">
-              <div className="video-header">
-                <div>
-                  <span className="eyebrow">VIDEO ENGINE</span>
-                  <h3>LTX + Free WAN</h3>
-                </div>
-                <span className="video-provider">AI VIDEO</span>
-              </div>
+            <span className="studio-status">
+              <span className="status-dot"></span>
+              <strong>AYRA Studio :8000</strong>
+            </span>
+          </div>
 
-              <div className="video-info">
-                <div>
-                  <small>Backend</small>
-                  <strong>AYRA Studio :8000</strong>
-                </div>
+          <div className="card studio-generator">
+            <label htmlFor="videoPrompt">Video Prompt</label>
 
-                <div>
-                  <small>Provider</small>
-                  <strong>LTX</strong>
-                </div>
+            <textarea
+              id="videoPrompt"
+              value={videoPrompt}
+              onChange={(event) => setVideoPrompt(event.target.value)}
+              placeholder="Example: A cinematic aerial shot of ancient India at sunrise..."
+              rows={5}
+            />
 
-                <div>
-                  <small>Fallback</small>
-                  <strong>Free WAN</strong>
-                </div>
-
-                <div>
-                  <small>Status</small>
-                  <strong className="success-text">Connected</strong>
-                </div>
-              </div>
-
-              <div className="hero-buttons">
-                <button
-                  className="primary-button"
-                  onClick={() => window.open("http://localhost:5173", "_blank")}
+            <div className="studio-controls">
+              <label>
+                Duration
+                <select
+                  value={videoDuration}
+                  onChange={(event) => setVideoDuration(event.target.value)}
                 >
-                  🎬 Open Studio
-                </button>
-              </div>
+                  <option value="2">2 seconds</option>
+                  <option value="4">4 seconds</option>
+                  <option value="6">6 seconds</option>
+                </select>
+              </label>
+
+              <button
+                className="primary-button"
+                onClick={generateStudioVideo}
+                disabled={videoGenerating}
+              >
+                {videoGenerating ? "Generating..." : "🎬 Generate Video"}
+              </button>
             </div>
-          </section>
-        )}
+
+            {videoError && (
+              <div className="error-box">
+                {videoError}
+              </div>
+            )}
+
+            {videoUrl && (
+              <div className="studio-preview">
+                <div className="preview-header">
+                  <strong>Generated Video</strong>
+                  <span>READY</span>
+                </div>
+
+                <video
+                  controls
+                  playsInline
+                  src={videoUrl}
+                  className="studio-video"
+                />
+
+                <a
+                  href={videoUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="secondary-button"
+                >
+                  Open Video
+                </a>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
         {(activeTab === "Research" ||
           activeTab === "Files" ||
@@ -677,3 +753,8 @@ function App() {
 }
 
 export default App;
+
+
+
+
+

@@ -1,4 +1,7 @@
-﻿import os
+﻿import json
+import os
+import urllib.request
+import urllib.error
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -58,6 +61,12 @@ class MemoryRequest(BaseModel):
     content: str = Field(min_length=1, max_length=5000)
     category: str = Field(default="general", max_length=100)
 
+
+class VideoRequest(BaseModel):
+    prompt: str
+    duration: float = 2
+    resolution: str = "704x512"
+    provider: str = "ltx"
 
 class TaskRequest(BaseModel):
     title: str = Field(min_length=1, max_length=500)
@@ -191,6 +200,56 @@ async def speech(request: SpeechRequest):
         ) from error
 
 
+@app.post("/api/video")
+def generate_video(request: VideoRequest):
+    studio_url = "http://127.0.0.1:8000/generate"
+
+    payload = {
+        "prompt": request.prompt,
+        "duration": request.duration,
+        "resolution": request.resolution,
+        "provider": request.provider,
+    }
+
+    data = json.dumps(payload).encode("utf-8")
+
+    http_request = urllib.request.Request(
+        studio_url,
+        data=data,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+
+    try:
+        with urllib.request.urlopen(http_request, timeout=600) as response:
+            result = json.loads(response.read().decode("utf-8"))
+
+    except urllib.error.HTTPError as error:
+        detail = error.read().decode("utf-8", errors="replace")
+        raise HTTPException(
+            status_code=502,
+            detail=f"AYRA Studio HTTP error: {detail}",
+        ) from error
+
+    except urllib.error.URLError as error:
+        raise HTTPException(
+            status_code=503,
+            detail=f"AYRA Studio connection failed: {error}",
+        ) from error
+
+    if not result.get("success"):
+        raise HTTPException(
+            status_code=502,
+            detail=result.get("error", "AYRA Studio video generation failed."),
+        )
+
+    filename = result.get("filename")
+
+    if filename:
+        result["video_url"] = f"http://127.0.0.1:8000/video/{filename}"
+
+    return result
+
 @app.get("/api/memory")
 async def get_memory(query: str = ""):
     if query.strip():
@@ -252,3 +311,5 @@ async def remove_task(task_id: int):
         raise HTTPException(status_code=404, detail="Task not found.")
 
     return {"success": True}
+
+
