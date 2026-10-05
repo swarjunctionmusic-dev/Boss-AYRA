@@ -3,8 +3,8 @@
   "channel": "stable",
   "version": "0.1.1",
   "minimum_supported_version": "0.1.0",
-  "release_url": "https://github.com/swarjunctionmusic-dev/Boss-AYRA/releases",
-  "package_url": "",
-  "sha256": "",
+  "release_url": "https://github.com/swarjunctionmusic-dev/Boss-AYRA/releases/tag/v0.1.1",
+  "package_url": "https://github.com/swarjunctionmusic-dev/Boss-AYRA/releases/download/v0.1.1/Boss-AYRA-v0.1.1.zip",
+  "sha256": "652259cfafa8aa092c48fee4939ee3a7dbbebe1623bd8a26258e63f5f47347a5",
   "published_at": ""
 }
