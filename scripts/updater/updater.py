@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import hashlib
 import json
@@ -193,6 +193,53 @@ def load_remote_manifest(
             data.get("published_at", "")
         ),
     )
+
+
+
+REMOTE_MANIFEST_URL = (
+    "https://raw.githubusercontent.com/"
+    "swarjunctionmusic-dev/Boss-AYRA/"
+    "master/scripts/updater/manifest.json"
+)
+
+
+def check_for_update() -> bool:
+    current = load_manifest()
+
+    remote_url = (
+        REMOTE_MANIFEST_URL
+        + "?cb="
+        + str(int(__import__("time").time()))
+    )
+
+    remote = load_remote_manifest(remote_url)
+
+    comparison = compare_versions(
+        current.version,
+        remote.version,
+    )
+
+    print("========================================")
+    print("        AYRA UPDATE CHECK")
+    print("========================================")
+    print(f"Current version : {current.version}")
+    print(f"Remote version  : {remote.version}")
+    print(f"Channel         : {remote.channel}")
+
+    if comparison < 0:
+        print("Status          : UPDATE AVAILABLE")
+        print(f"Release         : {remote.release_url}")
+        print("========================================")
+        return True
+
+    if comparison == 0:
+        print("Status          : UP TO DATE")
+        print("========================================")
+        return False
+
+    print("Status          : CURRENT IS NEWER")
+    print("========================================")
+    return False
 
 
 def download_package(
@@ -557,11 +604,11 @@ def print_manifest_status() -> None:
 
 if __name__ == "__main__":
     try:
-        print_manifest_status()
+        check_for_update()
 
     except Exception as exc:
         print(
-            "Manifest check : FAIL"
+            "Update check   : FAIL"
         )
         print(
             f"Error          : {exc}"
